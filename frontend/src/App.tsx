@@ -234,6 +234,16 @@ export function MainApp({
       .catch(() => setLiveForms([]));
   }, []);
 
+  // Function to refresh the forms list
+  const refreshForms = async () => {
+    try {
+      const forms = await fetchForms();
+      setLiveForms(forms);
+    } catch (error) {
+      setLiveForms([]);
+    }
+  };
+
   const handleSchemaChange = (value: string) => {
     setSchemaText(value);
     setSchemaError("");
@@ -724,6 +734,7 @@ export function MainApp({
                       onToggleStatus={toggleFormStatus}
                       onClone={cloneForm}
                       onDelete={openDeleteDialog}
+                      onRefresh={refreshForms}
                     />
                   }
                 />

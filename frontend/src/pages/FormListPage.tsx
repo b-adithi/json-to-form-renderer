@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { LiveForm } from "../types/schema";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
@@ -29,6 +30,7 @@ interface FormListPageProps {
   onToggleStatus: (formId: string) => void;
   onClone: (form: LiveForm) => void;
   onDelete: (formId: string) => void;
+  onRefresh?: () => void;
 }
 
 export function FormListPage({
@@ -39,8 +41,16 @@ export function FormListPage({
   onToggleStatus,
   onClone,
   onDelete,
+  onRefresh,
 }: FormListPageProps) {
   const navigate = useNavigate();
+
+  // Refetch forms when component mounts (e.g., when navigating back from create/edit)
+  useEffect(() => {
+    if (onRefresh) {
+      onRefresh();
+    }
+  }, [onRefresh]);
 
   const openPublicForm = (formId: string) => {
     const formUrl = `${window.location.origin}/submit/${formId}`;

@@ -1,13 +1,11 @@
-let forms = [];
-
 const mongoose = require("mongoose");
 const formSchema = require("../schemas/form");
 const Form = mongoose.model("Form", formSchema);
 
 module.exports = {
   getAll: async () => {
-    // Get all forms
-    const forms = await Form.find();
+    // Get all forms sorted by updatedOn date (most recent first)
+    const forms = await Form.find().sort({ updatedOn: -1 });
     // Get response counts for each form
     const mongoose = require("mongoose");
     const responseSchema = require("../schemas/response");

@@ -72,6 +72,7 @@ import { fetchForms } from "./api/forms";
 import { fetchResponses } from "./api/responses";
 import { PublicFormPage } from "./pages/PublicFormPage";
 import { loginUser } from "./api/users";
+import { FormUrlDialog } from "./components/FormUrlDialog";
 
 function AppContainer() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -79,7 +80,7 @@ function AppContainer() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [checkingAuth, setCheckingAuth] = useState(true);
 
-  // Check for saved authentication on mount
+  // Check for saved authentication and theme on mount
   useEffect(() => {
     setCheckingAuth(true);
     const savedAuth = localStorage.getItem("formrenderer_auth");
@@ -89,6 +90,13 @@ function AppContainer() {
       setIsAuthenticated(true);
       if (token) apiClient.setToken(token);
     }
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark" || savedTheme === "light") {
+      setTheme(savedTheme);
+    }
+
     setTimeout(() => setCheckingAuth(false), 350); // Simulate short load
   }, []);
 
@@ -99,6 +107,9 @@ function AppContainer() {
     } else {
       document.documentElement.classList.remove("dark");
     }
+
+    // Save theme to localStorage
+    localStorage.setItem("theme", theme);
   }, [theme]);
 
   const toggleTheme = () => {
@@ -194,6 +205,11 @@ export function MainApp({
   const [editingFormId, setEditingFormId] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [formToDelete, setFormToDelete] = useState<string | null>(null);
+  const [isUrlDialogOpen, setIsUrlDialogOpen] = useState(false);
+  const [publishedFormId, setPublishedFormId] = useState<string>("");
+  const [publishedFormName, setPublishedFormName] = useState<string>("");
+  const [publishedFormSchema, setPublishedFormSchema] =
+    useState<FormSchema | null>(null);
 
   const navigate = useNavigate();
 
@@ -314,6 +330,7 @@ export function MainApp({
       return;
     }
 
+    let formId = editingFormId;
     try {
       if (editingFormId) {
         // Update existing form via API
@@ -337,12 +354,20 @@ export function MainApp({
           schema,
           status,
         });
+        formId = created.id;
         setLiveForms((prev) => [created, ...prev]);
         toast.success(
           status === "published"
             ? "Form published successfully!"
             : "Form saved as draft!"
         );
+      }
+      if (status === "published") {
+        // Show URL dialog for published forms
+        setPublishedFormId(formId!);
+        setPublishedFormName(currentFormName);
+        setPublishedFormSchema(schema);
+        setIsUrlDialogOpen(true);
       }
       navigate("/forms");
     } catch (error) {
@@ -362,6 +387,13 @@ export function MainApp({
           ? "Form unpublished and saved as draft"
           : "Form published successfully!"
       );
+      if (newStatus === "published") {
+        // Show URL dialog for published forms
+        setPublishedFormId(formId!);
+        setPublishedFormName(currentFormName);
+        setPublishedFormSchema(schema);
+        setIsUrlDialogOpen(true);
+      }
     } catch {
       toast.error("Failed to update form status");
     }
@@ -821,6 +853,21 @@ export function MainApp({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {/* Form URL Dialog */}
+      {publishedFormSchema && (
+        <FormUrlDialog
+          open={isUrlDialogOpen}
+          onOpenChange={(open) => {
+            setIsUrlDialogOpen(open);
+            if (!open) {
+              navigate("/forms");
+            }
+          }}
+          formId={publishedFormId}
+          formName={publishedFormName}
+          formSchema={publishedFormSchema}
+        />
+      )}
     </div>
   );
 }

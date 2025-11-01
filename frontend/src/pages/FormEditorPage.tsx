@@ -73,6 +73,9 @@ export function FormEditorPage(props: FormEditorPageProps) {
                 </SelectItem>
                 <SelectItem value="quiz">🎯 JavaScript Quiz</SelectItem>
                 <SelectItem value="calculator">🧮 Loan Calculator</SelectItem>
+                <SelectItem value="eventRegistration">
+                  🎟 Event Registration
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>

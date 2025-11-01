@@ -125,7 +125,151 @@ jest.mock("../src/data/exampleSchemas", () => ({
   exampleSchemas: {
     contact: {
       title: "Contact Form",
-      fields: [{ name: "email", type: "email" }],
+      description: "A simple contact form with validation",
+      submitButton: "Send Message",
+      fields: [
+        {
+          id: "fullName",
+          type: "text",
+          label: "Full Name",
+          placeholder: "John Doe",
+          validation: {
+            required: true,
+            minLength: 2,
+            maxLength: 50,
+            message: "Please enter your full name",
+          },
+        },
+        {
+          id: "email",
+          type: "email",
+          label: "Email Address",
+          placeholder: "john@example.com",
+          validation: {
+            required: true,
+            email: true,
+          },
+        },
+      ],
+    },
+    survey: {
+      title: "Customer Satisfaction Survey",
+      description: "Help us improve by sharing your feedback",
+      submitButton: "Submit Survey",
+      enableMarks: false,
+      sections: [
+        {
+          id: "section1",
+          title: "Personal Information",
+          description: "Tell us about yourself",
+          fields: [
+            {
+              id: "age",
+              type: "number",
+              label: "Age",
+              validation: {
+                required: true,
+                min: 18,
+                max: 120,
+              },
+            },
+          ],
+        },
+      ],
+    },
+    jobApplication: {
+      title: "Job Application Form",
+      description: "Apply for a position at our company",
+      submitButton: "Submit Application",
+      uniqueField: "email",
+      fields: [
+        {
+          id: "firstName",
+          type: "text",
+          label: "First Name",
+          validation: {
+            required: true,
+            minLength: 2,
+          },
+        },
+        {
+          id: "email",
+          type: "email",
+          label: "Email",
+          validation: {
+            required: true,
+            email: true,
+          },
+        },
+      ],
+    },
+    quiz: {
+      title: "JavaScript Knowledge Quiz",
+      description: "Test your JavaScript knowledge with this quick quiz",
+      submitButton: "Submit Quiz",
+      enableMarks: true,
+      answerSequence: "any",
+      sections: [
+        {
+          id: "quiz",
+          title: "Quiz Questions",
+          fields: [
+            {
+              id: "q1",
+              type: "radio",
+              label:
+                "What is the correct way to declare a variable in JavaScript?",
+              options: [
+                { label: "var x = 5;", value: "a" },
+                { label: "variable x = 5;", value: "b" },
+              ],
+              validation: {
+                required: true,
+              },
+              enableMarks: true,
+              maxMarks: 10,
+            },
+          ],
+        },
+      ],
+    },
+    calculator: {
+      title: "Loan Calculator",
+      description: "Calculate your monthly loan payment",
+      submitButton: "Calculate",
+      fields: [
+        {
+          id: "loanAmount",
+          type: "number",
+          label: "Loan Amount ($)",
+          placeholder: "10000",
+          validation: {
+            required: true,
+            min: 1000,
+            max: 1000000,
+          },
+        },
+      ],
+    },
+    eventRegistration: {
+      title: "Event Registration with Advanced Features",
+      description:
+        "Comprehensive example showcasing conditional logic, validation, and computed fields",
+      submitButton: "Complete Registration",
+      fields: [
+        {
+          id: "participantName",
+          type: "text",
+          label: "Full Name",
+          placeholder: "John Smith",
+          validation: {
+            required: true,
+            minLength: 3,
+            maxLength: 50,
+            message: "Name must be between 3 and 50 characters",
+          },
+        },
+      ],
     },
   },
 }));

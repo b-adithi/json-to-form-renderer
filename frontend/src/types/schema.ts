@@ -35,8 +35,14 @@ export interface ValidationRule {
 
 export interface ConditionalLogic {
   field: string;
-  operator: "equals" | "notEquals" | "contains" | "greaterThan" | "lessThan";
-  value: any;
+  operator:
+    | "equals"
+    | "notEquals"
+    | "contains"
+    | "greaterThan"
+    | "lessThan"
+    | "notEmpty";
+  value?: any;
   action: "show" | "hide" | "require" | "enable" | "disable";
 }
 
@@ -69,6 +75,7 @@ export interface FieldSchema {
   conditional?: ConditionalLogic[];
   computed?: ComputedField;
   disabled?: boolean;
+  required?: boolean;
 
   // Matrix specific
   rows?: MatrixQuestion[];

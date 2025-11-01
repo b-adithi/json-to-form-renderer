@@ -368,8 +368,10 @@ export function MainApp({
         setPublishedFormName(currentFormName);
         setPublishedFormSchema(schema);
         setIsUrlDialogOpen(true);
+      } else {
+        // Navigate to forms only for draft saves (not published forms)
+        navigate("/forms");
       }
-      navigate("/forms");
     } catch (error) {
       toast.error("Failed to save form");
     }
@@ -390,8 +392,8 @@ export function MainApp({
       if (newStatus === "published") {
         // Show URL dialog for published forms
         setPublishedFormId(formId!);
-        setPublishedFormName(currentFormName);
-        setPublishedFormSchema(schema);
+        setPublishedFormName(form.name);
+        setPublishedFormSchema(form.schema);
         setIsUrlDialogOpen(true);
       }
     } catch {

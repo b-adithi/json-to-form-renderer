@@ -1,4 +1,4 @@
-import { ComputedField } from '../types/schema';
+import { ComputedField } from "../types/schema";
 
 export function evaluateFormula(
   formula: string,
@@ -6,28 +6,32 @@ export function evaluateFormula(
   dependencies: string[]
 ): number | null {
   try {
-    // Create a safe evaluation context with only the necessary field values
-    const context: { [key: string]: number } = {};
-    
-    dependencies.forEach(dep => {
+    // Create a safe evaluation context with all field values and proper types
+    const context: { [key: string]: any } = {};
+
+    dependencies.forEach((dep) => {
       const value = formData[dep];
-      context[dep] = typeof value === 'number' ? value : parseFloat(value) || 0;
+      // Keep original value type for string comparisons, but convert to number when needed
+      if (typeof value === "string" && !isNaN(parseFloat(value))) {
+        context[dep] = parseFloat(value);
+      } else if (typeof value === "number") {
+        context[dep] = value;
+      } else {
+        context[dep] = value || 0;
+      }
     });
 
-    // Replace field references in formula with actual values
-    let processedFormula = formula;
-    dependencies.forEach(dep => {
-      const regex = new RegExp(`\\b${dep}\\b`, 'g');
-      processedFormula = processedFormula.replace(regex, context[dep].toString());
-    });
+    // Create a function with the context variables as parameters
+    const contextKeys = Object.keys(context);
+    const contextValues = contextKeys.map((key) => context[key]);
 
-    // Evaluate the formula safely
-    // eslint-disable-next-line no-new-func
-    const result = new Function(`return ${processedFormula}`)();
-    
-    return typeof result === 'number' && !isNaN(result) ? result : null;
+    // Create the function with proper variable scope
+    const evalFunction = new Function(...contextKeys, `return ${formula}`);
+    const result = evalFunction(...contextValues);
+
+    return typeof result === "number" && !isNaN(result) ? result : null;
   } catch (error) {
-    console.error('Error evaluating formula:', error);
+    console.error("Error evaluating formula:", formula, error);
     return null;
   }
 }
@@ -36,15 +40,19 @@ export function calculateComputedField(
   computed: ComputedField,
   formData: { [key: string]: any }
 ): number | null {
-  const result = evaluateFormula(computed.formula, formData, computed.dependencies);
-  
+  const result = evaluateFormula(
+    computed.formula,
+    formData,
+    computed.dependencies
+  );
+
   if (result === null) return null;
-  
+
   // Apply precision if specified
   if (computed.precision !== undefined) {
     return parseFloat(result.toFixed(computed.precision));
   }
-  
+
   return result;
 }
 
@@ -53,8 +61,8 @@ export function updateComputedFields(
   formData: { [key: string]: any }
 ): { [key: string]: any } {
   const updates: { [key: string]: any } = {};
-  
-  fields.forEach(field => {
+
+  fields.forEach((field) => {
     if (field.computed) {
       const value = calculateComputedField(field.computed, formData);
       if (value !== null) {
@@ -62,6 +70,6 @@ export function updateComputedFields(
       }
     }
   });
-  
+
   return updates;
 }

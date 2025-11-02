@@ -9,6 +9,7 @@ module.exports = {
   create: async (data) => {
     const response = new Response({
       userId: data.userId,
+      userFullName: data.userFullName,
       formId: data.formId,
       responses: data.responses,
       submittedOn: new Date(),

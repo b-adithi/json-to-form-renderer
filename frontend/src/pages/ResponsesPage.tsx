@@ -59,7 +59,13 @@ export function ResponsesPage({
                         {response.submittedOn
                           ? new Date(response.submittedOn).toLocaleString()
                           : ""}
-                        {response.userId && ` • ${response.userId}`}
+                        {response.userFullName && response.userId
+                          ? ` • ${response.userFullName} (${response.userId})`
+                          : response.userFullName
+                          ? ` • ${response.userFullName}`
+                          : response.userId
+                          ? ` • ${response.userId}`
+                          : ""}
                       </CardDescription>
                     </div>
                     <Badge variant="secondary">{response._id}</Badge>

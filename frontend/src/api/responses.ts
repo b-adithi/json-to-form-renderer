@@ -1,9 +1,9 @@
 import { apiClient } from "./client";
-import { ENDPOINTS } from "./endpoints";
 
 export interface FormResponse {
   _id?: string;
   userId: string;
+  userFullName?: string;
   formId: string;
   responses: Record<string, any>;
   submittedOn?: string;
@@ -47,5 +47,7 @@ export async function fetchResponses(formId: string): Promise<FormResponse[]> {
 export async function submitResponse(
   data: Omit<FormResponse, "_id" | "submittedOn">
 ): Promise<FormResponse> {
-  return apiClient.post<FormResponse>(ENDPOINTS.responses, data);
+  // Use the public submission endpoint that doesn't require authentication
+  const { formId, ...responseData } = data;
+  return apiClient.post<FormResponse>(`/forms/${formId}/submit`, responseData);
 }

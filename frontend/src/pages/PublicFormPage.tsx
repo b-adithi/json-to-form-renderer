@@ -95,14 +95,20 @@ export function PublicFormPage() {
     const payload = {
       formId: id ?? "",
       userId: respondentEmail,
+      userFullName: respondentName,
       responses: submission.data,
     };
+
     try {
       await submitResponse(payload);
       setIsSubmitted(true);
       toast.success("Form submitted successfully!");
     } catch (error) {
-      toast.error("Failed to submit response");
+      toast.error(
+        `Failed to submit response: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   };
 

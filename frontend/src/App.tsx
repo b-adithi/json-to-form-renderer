@@ -1,6 +1,6 @@
 // Helper to handle API calls and auto-logout on 403
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   BrowserRouter,
   Routes,
@@ -235,14 +235,14 @@ export function MainApp({
   }, []);
 
   // Function to refresh the forms list
-  const refreshForms = async () => {
+  const refreshForms = useCallback(async () => {
     try {
       const forms = await fetchForms();
       setLiveForms(forms);
     } catch (error) {
       setLiveForms([]);
     }
-  };
+  }, []);
 
   const handleSchemaChange = (value: string) => {
     setSchemaText(value);
@@ -380,7 +380,7 @@ export function MainApp({
         setIsUrlDialogOpen(true);
       } else {
         // Navigate to forms only for draft saves (not published forms)
-        navigate("/forms");
+        navigate("/forms", { state: { shouldRefresh: true } });
       }
     } catch (error) {
       toast.error("Failed to save form");
@@ -510,10 +510,16 @@ export function MainApp({
             Object.keys(response.responses).forEach((key) => allKeys.add(key));
           }
         });
-        const headers = ["User ID", "Submitted On", ...Array.from(allKeys)];
+        const headers = [
+          "Full Name",
+          "Email",
+          "Submitted On",
+          ...Array.from(allKeys),
+        ];
         const csvRows = [headers.join(",")];
         responses.forEach((response: any) => {
           const row = [
+            response.userFullName ?? "",
             response.userId ?? "",
             response.submittedOn ?? "",
             ...Array.from(allKeys).map((key) => {
@@ -873,7 +879,7 @@ export function MainApp({
           onOpenChange={(open) => {
             setIsUrlDialogOpen(open);
             if (!open) {
-              navigate("/forms");
+              navigate("/forms", { state: { shouldRefresh: true } });
             }
           }}
           formId={publishedFormId}

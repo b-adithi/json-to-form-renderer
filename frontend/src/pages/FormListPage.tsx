@@ -20,7 +20,7 @@ import {
   MoreVertical,
   ExternalLink,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 interface FormListPageProps {
   liveForms: LiveForm[];
@@ -44,13 +44,17 @@ export function FormListPage({
   onRefresh,
 }: FormListPageProps) {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // Refetch forms when component mounts (e.g., when navigating back from create/edit)
+  // Refetch forms when navigating back from create/edit screens
   useEffect(() => {
-    if (onRefresh) {
+    // Only refresh if we have the refresh function and we're coming from a form operation
+    if (onRefresh && location.state?.shouldRefresh) {
       onRefresh();
+      // Clear the state to prevent unnecessary refreshes
+      navigate(location.pathname, { replace: true, state: {} });
     }
-  }, [onRefresh]);
+  }, [onRefresh, location.state, navigate, location.pathname]);
 
   const openPublicForm = (formId: string) => {
     const formUrl = `${window.location.origin}/submit/${formId}`;

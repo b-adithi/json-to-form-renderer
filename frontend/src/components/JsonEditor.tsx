@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import Editor, { loader } from "@monaco-editor/react";
+import Editor from "@monaco-editor/react";
 import { AutocompleteHelp } from "./AutocompleteHelp";
 
 interface JsonEditorProps {
@@ -87,7 +87,7 @@ export function JsonEditor({
     };
   }, []);
 
-  const handleEditorWillMount = (monaco: any) => {
+  const handleEditorWillMount = (_monaco: any) => {
     // Additional Monaco-specific error suppression
     try {
       // This helps prevent CSS-related errors in Monaco
@@ -884,7 +884,9 @@ export function JsonEditor({
   return (
     <div
       className="border rounded-lg overflow-hidden flex flex-col"
-      style={{ height: "calc(100vh - 69px - 69px - 74px - 16px - 16px - 40px)" }}
+      style={{
+        height: "calc(100vh - 69px - 69px - 74px - 16px - 16px - 40px)",
+      }}
     >
       {/* Quick Insert Toolbar */}
       <div className="flex items-center gap-2 p-2 bg-muted/30 border-b flex-shrink-0 flex-wrap">

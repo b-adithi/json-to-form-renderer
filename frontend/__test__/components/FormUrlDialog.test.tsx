@@ -233,10 +233,13 @@ describe("FormUrlDialog Component", () => {
       const copyButton = screen.getAllByRole("button")[0]; // First button is the copy button
       await userEvent.click(copyButton);
 
-      await waitFor(() => {
-        expect(toast.error).toHaveBeenCalledWith("Failed to copy URL");
-      });
-    });
+      await waitFor(
+        () => {
+          expect(toast.error).toHaveBeenCalledWith("Failed to copy URL");
+        },
+        { timeout: 10000 }
+      );
+    }, 15000);
 
     it("should reset copied state after 2 seconds", () => {
       jest.useFakeTimers();

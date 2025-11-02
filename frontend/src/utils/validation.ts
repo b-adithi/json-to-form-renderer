@@ -1,16 +1,13 @@
-import { FieldSchema, ValidationRule } from '../types/schema';
+import { FieldSchema } from "../types/schema";
 
-export function validateField(
-  value: any,
-  field: FieldSchema
-): string | null {
+export function validateField(value: any, field: FieldSchema): string | null {
   const validation = field.validation;
-  
+
   if (!validation) return null;
 
   // Required validation
   if (validation.required) {
-    if (value === undefined || value === null || value === '') {
+    if (value === undefined || value === null || value === "") {
       return validation.message || `${field.label} is required`;
     }
     if (Array.isArray(value) && value.length === 0) {
@@ -22,19 +19,19 @@ export function validateField(
   if (!value && !validation.required) return null;
 
   // Email validation
-  if (field.type === 'email' || validation.email) {
+  if (field.type === "email" || validation.email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(value)) {
-      return validation.message || 'Please enter a valid email address';
+      return validation.message || "Please enter a valid email address";
     }
   }
 
   // URL validation
-  if (field.type === 'url' || validation.url) {
+  if (field.type === "url" || validation.url) {
     try {
       new URL(value);
     } catch {
-      return validation.message || 'Please enter a valid URL';
+      return validation.message || "Please enter a valid URL";
     }
   }
 
@@ -47,36 +44,58 @@ export function validateField(
   }
 
   // String length validation
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     if (validation.minLength && value.length < validation.minLength) {
-      return validation.message || `${field.label} must be at least ${validation.minLength} characters`;
+      return (
+        validation.message ||
+        `${field.label} must be at least ${validation.minLength} characters`
+      );
     }
     if (validation.maxLength && value.length > validation.maxLength) {
-      return validation.message || `${field.label} must be no more than ${validation.maxLength} characters`;
+      return (
+        validation.message ||
+        `${field.label} must be no more than ${validation.maxLength} characters`
+      );
     }
   }
 
   // Number range validation
-  if (typeof value === 'number' || field.type === 'number' || field.type === 'range') {
-    const numValue = typeof value === 'string' ? parseFloat(value) : value;
+  if (
+    typeof value === "number" ||
+    field.type === "number" ||
+    field.type === "range"
+  ) {
+    const numValue = typeof value === "string" ? parseFloat(value) : value;
     if (isNaN(numValue)) {
       return validation.message || `${field.label} must be a number`;
     }
     if (validation.min !== undefined && numValue < validation.min) {
-      return validation.message || `${field.label} must be at least ${validation.min}`;
+      return (
+        validation.message ||
+        `${field.label} must be at least ${validation.min}`
+      );
     }
     if (validation.max !== undefined && numValue > validation.max) {
-      return validation.message || `${field.label} must be no more than ${validation.max}`;
+      return (
+        validation.message ||
+        `${field.label} must be no more than ${validation.max}`
+      );
     }
   }
 
   // Array validation (for multiselect, checkbox)
   if (Array.isArray(value)) {
     if (validation.min && value.length < validation.min) {
-      return validation.message || `Please select at least ${validation.min} option(s)`;
+      return (
+        validation.message ||
+        `Please select at least ${validation.min} option(s)`
+      );
     }
     if (validation.max && value.length > validation.max) {
-      return validation.message || `Please select no more than ${validation.max} option(s)`;
+      return (
+        validation.message ||
+        `Please select no more than ${validation.max} option(s)`
+      );
     }
   }
 
@@ -89,7 +108,7 @@ export function validateForm(
 ): { [key: string]: string } {
   const errors: { [key: string]: string } = {};
 
-  fields.forEach(field => {
+  fields.forEach((field) => {
     const error = validateField(data[field.id], field);
     if (error) {
       errors[field.id] = error;

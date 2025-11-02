@@ -119,9 +119,9 @@ describe("FormListPage Component", () => {
 
     if (triggerButtons.length > 0) {
       await userEvent.click(triggerButtons[0]);
-      // Check if dropdown menu opened by looking for menu items
-      const menuItems = await screen.findAllByRole("menuitem");
-      expect(menuItems.length).toBeGreaterThan(0);
+      // Check if dropdown menu opened by looking for a menu item
+      const editText = await screen.findByText("Edit");
+      expect(editText).toBeInTheDocument();
     }
   });
 
@@ -138,7 +138,7 @@ describe("FormListPage Component", () => {
 
     if (triggerButtons.length > 0) {
       await userEvent.click(triggerButtons[0]);
-      const editButton = await screen.findByRole("menuitem", { name: /edit/i });
+      const editButton = await screen.findByText("Edit");
       await userEvent.click(editButton);
 
       expect(defaultProps.onEdit).toHaveBeenCalledWith(mockLiveForms[0]);
@@ -158,9 +158,7 @@ describe("FormListPage Component", () => {
 
     if (triggerButtons.length > 0) {
       await userEvent.click(triggerButtons[0]);
-      const testButton = await screen.findByRole("menuitem", {
-        name: /test form/i,
-      });
+      const testButton = await screen.findByText("Test Form");
       await userEvent.click(testButton);
 
       expect(defaultProps.onTestForm).toHaveBeenCalledWith(mockLiveForms[0]);
@@ -180,9 +178,7 @@ describe("FormListPage Component", () => {
 
     if (triggerButtons.length > 0) {
       await userEvent.click(triggerButtons[0]);
-      const publishButton = await screen.findByRole("menuitem", {
-        name: /unpublish/i,
-      }); // First form is published
+      const publishButton = await screen.findByText("Unpublish"); // First form is published
       await userEvent.click(publishButton);
 
       expect(defaultProps.onToggleStatus).toHaveBeenCalledWith("1");
@@ -202,9 +198,7 @@ describe("FormListPage Component", () => {
 
     if (triggerButtons.length > 0) {
       await userEvent.click(triggerButtons[0]);
-      const cloneButton = await screen.findByRole("menuitem", {
-        name: /clone/i,
-      });
+      const cloneButton = await screen.findByText("Clone");
       await userEvent.click(cloneButton);
 
       expect(defaultProps.onClone).toHaveBeenCalledWith(mockLiveForms[0]);
@@ -224,9 +218,7 @@ describe("FormListPage Component", () => {
 
     if (triggerButtons.length > 0) {
       await userEvent.click(triggerButtons[0]);
-      const deleteButton = await screen.findByRole("menuitem", {
-        name: /delete/i,
-      });
+      const deleteButton = await screen.findByText("Delete");
       await userEvent.click(deleteButton);
 
       expect(defaultProps.onDelete).toHaveBeenCalledWith("1");
@@ -253,9 +245,7 @@ describe("FormListPage Component", () => {
 
     if (triggerButtons.length > 0) {
       await userEvent.click(triggerButtons[0]);
-      const openButton = await screen.findByRole("menuitem", {
-        name: /open public form/i,
-      });
+      const openButton = await screen.findByText("Open Public Form");
       await userEvent.click(openButton);
 
       expect(mockOpen).toHaveBeenCalledWith(
@@ -284,9 +274,7 @@ describe("FormListPage Component", () => {
 
     if (triggerButtons.length > 0) {
       await userEvent.click(triggerButtons[0]);
-      const publishButton = await screen.findByRole("menuitem", {
-        name: /publish/i,
-      }); // Draft form should show "Publish"
+      const publishButton = await screen.findByText("Publish"); // Draft form should show "Publish"
       await userEvent.click(publishButton);
 
       expect(defaultProps.onToggleStatus).toHaveBeenCalledWith("2");

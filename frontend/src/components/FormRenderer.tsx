@@ -212,7 +212,7 @@ export function FormRenderer({ schema, onSubmit }: FormRendererProps) {
     onSubmit?.(newSubmission);
   };
 
-  const handleExport = (format: "json" | "csv" | "xml") => {
+  const handleExport = (format: "json" | "csv") => {
     if (submission) {
       exportSubmission(submission, format);
     }
@@ -313,12 +313,6 @@ export function FormRenderer({ schema, onSubmit }: FormRendererProps) {
                   <Button onClick={() => handleExport("csv")} variant="outline">
                     <Download className="w-4 h-4 mr-2" />
                     Export CSV
-                  </Button>
-                )}
-                {schema.exportFormats.includes("xml") && (
-                  <Button onClick={() => handleExport("xml")} variant="outline">
-                    <Download className="w-4 h-4 mr-2" />
-                    Export XML
                   </Button>
                 )}
               </div>

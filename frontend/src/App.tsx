@@ -239,7 +239,7 @@ export function MainApp({
     try {
       const forms = await fetchForms();
       setLiveForms(forms);
-    } catch (error) {
+    } catch {
       setLiveForms([]);
     }
   }, []);
@@ -255,7 +255,7 @@ export function MainApp({
       const formatted = JSON.stringify(parsed, null, 2);
       setSchemaText(formatted);
       toast.success("JSON formatted successfully!");
-    } catch (error) {
+    } catch {
       toast.error("Cannot format invalid JSON");
     }
   };
@@ -382,7 +382,7 @@ export function MainApp({
         // Navigate to forms only for draft saves (not published forms)
         navigate("/forms", { state: { shouldRefresh: true } });
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to save form");
     }
   };
@@ -542,7 +542,7 @@ export function MainApp({
         URL.revokeObjectURL(url);
         toast.success("Responses exported as CSV!");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to export responses");
     }
   };

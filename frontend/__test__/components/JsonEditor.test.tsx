@@ -459,4 +459,218 @@ describe("JsonEditor Component", () => {
 
     expect(mockOnChange).toHaveBeenCalledWith('{"title": "New Form"}');
   });
+
+  it("handles Monaco Editor configuration and model creation", async () => {
+    render(<JsonEditor value="{}" onChange={mockOnChange} />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("monaco-editor")).toBeInTheDocument();
+    });
+
+    // Test that the editor is properly configured
+    expect(mockEditor.getModel).toBeDefined();
+    expect(mockEditor.getPosition).toBeDefined();
+  });
+
+  it("handles autocomplete suggestions", async () => {
+    render(<JsonEditor value="{}" onChange={mockOnChange} />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("monaco-editor")).toBeInTheDocument();
+    });
+
+    // Test that autocomplete can be triggered
+    const editor = screen.getByTestId("monaco-editor");
+    fireEvent.keyDown(editor, { key: "Control" });
+    fireEvent.keyDown(editor, { key: " " });
+
+    // Should not crash
+    expect(editor).toBeInTheDocument();
+  });
+
+  it("handles validation states", () => {
+    const { rerender } = render(
+      <JsonEditor value="{}" onChange={mockOnChange} />
+    );
+
+    // No error initially
+    expect(screen.queryByText(/error/i)).not.toBeInTheDocument();
+
+    // Add error
+    rerender(
+      <JsonEditor
+        value='{"invalid": }'
+        onChange={mockOnChange}
+        error="Syntax error"
+      />
+    );
+
+    expect(screen.getByText("Syntax error")).toBeInTheDocument();
+
+    // Clear error
+    rerender(<JsonEditor value="{}" onChange={mockOnChange} />);
+
+    expect(screen.queryByText("Syntax error")).not.toBeInTheDocument();
+  });
+
+  it("handles resize and responsiveness", async () => {
+    render(<JsonEditor value="{}" onChange={mockOnChange} />);
+
+    const editor = screen.getByTestId("monaco-editor");
+
+    // Should render in responsive container
+    expect(editor).toBeInTheDocument();
+
+    // Simulate window resize
+    global.dispatchEvent(new Event("resize"));
+
+    // Should still be rendered
+    expect(editor).toBeInTheDocument();
+  });
+
+  it("handles clipboard operations", async () => {
+    render(<JsonEditor value='{"test": "value"}' onChange={mockOnChange} />);
+
+    const editor = screen.getByTestId("monaco-editor");
+
+    // Simulate copy operation
+    fireEvent.keyDown(editor, { key: "c", ctrlKey: true });
+
+    // Should not crash
+    expect(editor).toBeInTheDocument();
+  });
+
+  it("handles keyboard shortcuts", async () => {
+    render(<JsonEditor value="{}" onChange={mockOnChange} />);
+
+    const editor = screen.getByTestId("monaco-editor");
+
+    // Test format shortcut
+    fireEvent.keyDown(editor, { key: "f", ctrlKey: true, shiftKey: true });
+
+    // Test save shortcut
+    fireEvent.keyDown(editor, { key: "s", ctrlKey: true });
+
+    // Should not crash
+    expect(editor).toBeInTheDocument();
+  });
+
+  it("handles editor disposal and cleanup", async () => {
+    const { unmount } = render(
+      <JsonEditor value="{}" onChange={mockOnChange} />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("monaco-editor")).toBeInTheDocument();
+    });
+
+    // Unmount should not cause errors
+    unmount();
+
+    // Re-mount should work
+    render(<JsonEditor value="{}" onChange={mockOnChange} />);
+
+    expect(screen.getByTestId("monaco-editor")).toBeInTheDocument();
+  });
+
+  it("handles complex JSON with arrays and nested objects", () => {
+    const complexJson = `{
+  "form": {
+    "title": "Complex Form",
+    "sections": [
+      {
+        "title": "Personal Info",
+        "fields": [
+          {
+            "id": "name",
+            "type": "text",
+            "validation": {
+              "required": true,
+              "rules": ["minLength:2", "maxLength:50"]
+            }
+          }
+        ]
+      }
+    ],
+    "settings": {
+      "submitButton": {
+        "text": "Submit",
+        "style": "primary"
+      },
+      "validation": {
+        "mode": "onChange",
+        "showErrors": true
+      }
+    }
+  }
+}`;
+
+    render(<JsonEditor value={complexJson} onChange={mockOnChange} />);
+
+    const editor = screen.getByTestId("monaco-editor");
+    expect(editor).toHaveValue(complexJson);
+  });
+
+  it("handles editing operations at specific positions", async () => {
+    render(<JsonEditor value='{"test": "value"}' onChange={mockOnChange} />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("monaco-editor")).toBeInTheDocument();
+    });
+
+    // Mock specific editor position
+    mockEditor.getPosition.mockReturnValue({
+      lineNumber: 1,
+      column: 10,
+    });
+
+    const textButton = screen.getByTitle("Insert text field");
+    fireEvent.click(textButton);
+
+    // Should handle position-based insertions
+    expect(mockEditor.getPosition).toHaveBeenCalled();
+  });
+
+  it("handles Monaco editor error states", () => {
+    // Mock console to suppress expected errors
+    const originalError = console.error;
+    console.error = jest.fn();
+
+    render(<JsonEditor value="{}" onChange={mockOnChange} />);
+
+    // Simulate Monaco error
+    const editor = screen.getByTestId("monaco-editor");
+    fireEvent.error(editor);
+
+    // Should handle errors gracefully
+    expect(editor).toBeInTheDocument();
+
+    console.error = originalError;
+  });
+
+  it("handles different input scenarios", () => {
+    const testCases = [
+      '""',
+      "[]",
+      "null",
+      "true",
+      "false",
+      "123",
+      '{"nested": {"deep": {"value": "test"}}}',
+      '{"array": [1, 2, 3, {"nested": "value"}]}',
+    ];
+
+    // Test each case individually to avoid DOM conflicts
+    for (const testValue of testCases) {
+      const { unmount } = render(
+        <JsonEditor value={testValue} onChange={mockOnChange} />
+      );
+
+      const editor = screen.getByTestId("monaco-editor");
+      expect(editor).toHaveValue(testValue);
+
+      // Clean up after each test case
+      unmount();
+    }
+  });
 });

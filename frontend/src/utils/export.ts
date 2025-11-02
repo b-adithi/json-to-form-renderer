@@ -101,57 +101,6 @@ export function exportToCSV(data: FormSubmission, schema?: FormSchema): string {
     .join("\n");
 }
 
-export function exportToXML(data: FormSubmission): string {
-  let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
-  xml += "<submission>\n";
-  xml += `  <id>${escapeXml(data.submissionId)}</id>\n`;
-  xml += `  <timestamp>${escapeXml(data.timestamp)}</timestamp>\n`;
-
-  if (data.userIdentifier) {
-    xml += `  <userIdentifier>${escapeXml(
-      data.userIdentifier
-    )}</userIdentifier>\n`;
-  }
-
-  if (data.totalMarks !== undefined) {
-    xml += `  <totalMarks>${data.totalMarks}</totalMarks>\n`;
-  }
-
-  if (data.maxMarks !== undefined) {
-    xml += `  <maxMarks>${data.maxMarks}</maxMarks>\n`;
-  }
-
-  xml += "  <data>\n";
-  Object.entries(data.data).forEach(([key, value]) => {
-    xml += `    <field name="${escapeXml(key)}">`;
-    if (Array.isArray(value)) {
-      xml += "\n";
-      value.forEach((item) => {
-        xml += `      <item>${escapeXml(String(item))}</item>\n`;
-      });
-      xml += "    ";
-    } else if (typeof value === "object" && value !== null) {
-      xml += escapeXml(JSON.stringify(value));
-    } else {
-      xml += escapeXml(String(value));
-    }
-    xml += "</field>\n";
-  });
-  xml += "  </data>\n";
-  xml += "</submission>";
-
-  return xml;
-}
-
-function escapeXml(str: string): string {
-  return str
-    .replace(/&/g, "&")
-    .replace(/</g, "<")
-    .replace(/>/g, ">")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;");
-}
-
 export function downloadFile(
   content: string,
   filename: string,
@@ -170,7 +119,7 @@ export function downloadFile(
 
 export function exportSubmission(
   submission: FormSubmission,
-  format: "json" | "csv" | "xml",
+  format: "json" | "csv",
   schema?: FormSchema
 ): void {
   let content: string;
@@ -190,66 +139,6 @@ export function exportSubmission(
       filename = `form-submission-${timestamp}.csv`;
       mimeType = "text/csv";
       break;
-    case "xml":
-      content = exportToXML(submission);
-      filename = `form-submission-${timestamp}.xml`;
-      mimeType = "application/xml";
-      break;
-  }
-
-  downloadFile(content, filename, mimeType);
-}
-
-// Enhanced export for multiple submissions
-export function exportMultipleSubmissions(
-  submissions: any[],
-  format: "json" | "csv",
-  schema: FormSchema,
-  filename: string
-): void {
-  let content: string;
-  let mimeType: string;
-
-  if (format === "json") {
-    content = JSON.stringify(submissions, null, 2);
-    mimeType = "application/json";
-  } else {
-    // Enhanced CSV export with field labels
-    const allKeys = new Set<string>();
-    submissions.forEach((response: any) => {
-      Object.keys(response.data).forEach((key) => allKeys.add(key));
-    });
-
-    // Create headers with field labels
-    const fieldIds = Array.from(allKeys);
-    const headers = [
-      "Submission ID",
-      "Timestamp",
-      "Respondent Name",
-      "Respondent Email",
-      ...fieldIds.map((fieldId) => getFieldLabel(schema, fieldId)),
-    ];
-
-    const csvRows = [headers.join(",")];
-
-    submissions.forEach((response: any) => {
-      const row = [
-        response.submissionId,
-        response.timestamp,
-        response.respondentName || "",
-        response.respondentEmail || "",
-        ...fieldIds.map((fieldId) => {
-          const value = response.data[fieldId];
-          return formatValue(value, schema, fieldId);
-        }),
-      ];
-      csvRows.push(
-        row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
-      );
-    });
-
-    content = csvRows.join("\n");
-    mimeType = "text/csv";
   }
 
   downloadFile(content, filename, mimeType);

@@ -22,7 +22,7 @@ export function ResponsesPage({
 }: ResponsesPageProps) {
   return (
     <>
-      <div className="pb-20">
+      <div className="pb-20" data-testid="responses-page">
         <div className="mb-6">
           <div className="flex items-center justify-between">
             <div>

@@ -145,4 +145,64 @@ router.delete("/forms/:id", authenticateToken, async (req, res) => {
   }
 });
 
+// Public endpoint for form submissions (no authentication required)
+/**
+ * @swagger
+ * /forms/{id}/submit:
+ *   post:
+ *     tags: [Forms]
+ *     summary: Submit a response to a published form (public endpoint)
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Form ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 example: "user@example.com"
+ *               userFullName:
+ *                 type: string
+ *                 example: "John Doe"
+ *               responses:
+ *                 type: object
+ *                 example: {"Name": "John Doe", "Email": "john@example.com"}
+ *     responses:
+ *       200:
+ *         description: Response submitted successfully
+ *       404:
+ *         description: Form not found or not published
+ */
+router.post("/forms/:id/submit", async (req, res) => {
+  try {
+    const responses = require("../models/responses");
+    const formId = req.params.id;
+
+    // Verify form exists and is published
+    const form = await forms.get(formId);
+    if (!form || form.status !== "published") {
+      return res.status(404).json({ error: "Form not found or not published" });
+    }
+
+    // Create response with form ID
+    const responseData = {
+      ...req.body,
+      formId: formId,
+    };
+
+    const response = await responses.create(responseData);
+    res.status(201).json(response);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;

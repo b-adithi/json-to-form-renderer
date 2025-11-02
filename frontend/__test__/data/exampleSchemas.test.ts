@@ -3,7 +3,7 @@ import {
   surveyFormSchema,
   jobApplicationSchema,
   quizSchema,
-  calculatorFormSchema,
+  eventRegistrationFormSchema,
   exampleSchemas,
 } from "../../src/data/exampleSchemas";
 import { FieldSchema } from "../../src/types/schema";
@@ -171,49 +171,257 @@ describe("Example Schemas", () => {
     });
   });
 
-  describe("calculatorFormSchema", () => {
-    it("should have calculation fields", () => {
-      expect(calculatorFormSchema.title).toBe("Loan Calculator");
-      expect(calculatorFormSchema.fields).toHaveLength(5);
+  describe("eventRegistrationFormSchema", () => {
+    it("should have correct basic structure", () => {
+      expect(eventRegistrationFormSchema.title).toBe(
+        "Event Registration with Advanced Features"
+      );
+      expect(eventRegistrationFormSchema.description).toBe(
+        "Comprehensive example showcasing conditional logic, validation, and computed fields"
+      );
+      expect(eventRegistrationFormSchema.submitButton).toBe(
+        "Complete Registration"
+      );
+      expect(eventRegistrationFormSchema.fields).toHaveLength(20);
     });
 
-    it("should have computed fields", () => {
-      const monthlyPaymentField = calculatorFormSchema.fields!.find(
-        (f) => f.id === "monthlyPayment"
-      );
-      const totalPaymentField = calculatorFormSchema.fields!.find(
-        (f) => f.id === "totalPayment"
-      );
-
-      expect(monthlyPaymentField?.computed).toBeDefined();
-      expect(monthlyPaymentField?.disabled).toBe(true);
-      expect(monthlyPaymentField?.computed?.dependencies).toEqual([
-        "loanAmount",
-        "interestRate",
-        "loanTerm",
-      ]);
-
-      expect(totalPaymentField?.computed).toBeDefined();
-      expect(totalPaymentField?.computed?.dependencies).toEqual([
-        "monthlyPayment",
-        "loanTerm",
-      ]);
-      expect(totalPaymentField?.computed?.precision).toBe(2);
+    it("should have all required participant fields", () => {
+      const participantFields = ["participantName", "email", "phone", "age"];
+      participantFields.forEach((fieldId) => {
+        const field = eventRegistrationFormSchema.fields!.find(
+          (f) => f.id === fieldId
+        );
+        expect(field).toBeDefined();
+        expect(field?.validation?.required).toBe(true);
+      });
     });
 
-    it("should have proper input validation", () => {
-      const loanAmountField = calculatorFormSchema.fields!.find(
-        (f) => f.id === "loanAmount"
+    it("should have ticket type selection with proper options", () => {
+      const ticketField = eventRegistrationFormSchema.fields!.find(
+        (f) => f.id === "ticketType"
       );
-      const interestRateField = calculatorFormSchema.fields!.find(
-        (f) => f.id === "interestRate"
+      expect(ticketField?.type).toBe("select");
+      expect(ticketField?.options).toHaveLength(4);
+      expect(ticketField?.options![0]).toEqual({
+        label: "General Admission - $50",
+        value: "general",
+      });
+      expect(ticketField?.options![2]).toEqual({
+        label: "Student - $25",
+        value: "student",
+      });
+    });
+
+    it("should have conditional logic for student ID field", () => {
+      const studentIdField = eventRegistrationFormSchema.fields!.find(
+        (f) => f.id === "studentId"
+      );
+      expect(studentIdField?.conditional).toHaveLength(2);
+
+      const showCondition = studentIdField?.conditional![0];
+      expect(showCondition?.field).toBe("ticketType");
+      expect(showCondition?.operator).toBe("equals");
+      expect(showCondition?.value).toBe("student");
+      expect(showCondition?.action).toBe("show");
+
+      const requireCondition = studentIdField?.conditional![1];
+      expect(requireCondition?.action).toBe("require");
+    });
+
+    it("should have conditional logic for senior verification", () => {
+      const seniorField = eventRegistrationFormSchema.fields!.find(
+        (f) => f.id === "seniorVerification"
+      );
+      expect(seniorField?.type).toBe("checkbox");
+      expect(seniorField?.conditional).toHaveLength(2);
+
+      const conditions = seniorField?.conditional!;
+      expect(conditions[0].field).toBe("ticketType");
+      expect(conditions[0].value).toBe("senior");
+      expect(conditions[0].action).toBe("show");
+      expect(conditions[1].action).toBe("require");
+    });
+
+    it("should have proper validation patterns", () => {
+      const phoneField = eventRegistrationFormSchema.fields!.find(
+        (f) => f.id === "phone"
+      );
+      expect(phoneField?.validation?.pattern).toBe(
+        "^\\+?1?-?\\(?\\d{3}\\)?-?\\d{3}-?\\d{4}$"
       );
 
-      expect(loanAmountField?.validation?.min).toBe(1000);
-      expect(loanAmountField?.validation?.max).toBe(1000000);
-      expect(interestRateField?.validation?.min).toBe(0);
-      expect(interestRateField?.validation?.max).toBe(100);
-      expect(interestRateField?.step).toBe(0.1);
+      const studentIdField = eventRegistrationFormSchema.fields!.find(
+        (f) => f.id === "studentId"
+      );
+      expect(studentIdField?.validation?.pattern).toBe("^STU-\\d{6}$");
+    });
+
+    it("should have accommodation fields with conditional logic", () => {
+      const accommodationField = eventRegistrationFormSchema.fields!.find(
+        (f) => f.id === "accommodationNeeded"
+      );
+      expect(accommodationField?.type).toBe("radio");
+      expect(accommodationField?.options).toHaveLength(2);
+
+      const nightsField = eventRegistrationFormSchema.fields!.find(
+        (f) => f.id === "nights"
+      );
+      expect(nightsField?.conditional).toHaveLength(2);
+      expect(nightsField?.conditional![0].field).toBe("accommodationNeeded");
+      expect(nightsField?.conditional![0].value).toBe("yes");
+
+      const roomTypeField = eventRegistrationFormSchema.fields!.find(
+        (f) => f.id === "roomType"
+      );
+      expect(roomTypeField?.options).toHaveLength(3);
+      expect(roomTypeField?.options![0]).toEqual({
+        label: "Single - $100/night",
+        value: "single",
+      });
+    });
+
+    it("should have computed fields for pricing calculations", () => {
+      const ticketPriceField = eventRegistrationFormSchema.fields!.find(
+        (f) => f.id === "ticketPrice"
+      );
+      expect(ticketPriceField?.computed).toBeDefined();
+      expect(ticketPriceField?.computed?.dependencies).toContain("ticketType");
+      expect(ticketPriceField?.computed?.precision).toBe(2);
+      expect(ticketPriceField?.disabled).toBe(true);
+
+      const subtotalField = eventRegistrationFormSchema.fields!.find(
+        (f) => f.id === "ticketSubtotal"
+      );
+      expect(subtotalField?.computed?.dependencies).toEqual([
+        "ticketPrice",
+        "numberOfTickets",
+      ]);
+      expect(subtotalField?.computed?.formula).toBe(
+        "ticketPrice * numberOfTickets"
+      );
+
+      const totalField = eventRegistrationFormSchema.fields!.find(
+        (f) => f.id === "totalCost"
+      );
+      expect(totalField?.computed?.dependencies).toEqual([
+        "ticketSubtotal",
+        "accommodationCost",
+      ]);
+      expect(totalField?.computed?.formula).toBe(
+        "ticketSubtotal + accommodationCost"
+      );
+    });
+
+    it("should have dietary restrictions as multi-select checkbox", () => {
+      const dietaryField = eventRegistrationFormSchema.fields!.find(
+        (f) => f.id === "dietaryRestrictions"
+      );
+      expect(dietaryField?.type).toBe("checkbox");
+      expect(dietaryField?.options).toHaveLength(6);
+      expect(dietaryField?.options).toContainEqual({
+        label: "Vegetarian",
+        value: "vegetarian",
+      });
+      expect(dietaryField?.options).toContainEqual({
+        label: "None",
+        value: "none",
+      });
+    });
+
+    it("should have special meal request with conditional logic", () => {
+      const mealRequestField = eventRegistrationFormSchema.fields!.find(
+        (f) => f.id === "specialMealRequest"
+      );
+      expect(mealRequestField?.type).toBe("textarea");
+      expect(mealRequestField?.conditional).toHaveLength(1);
+      expect(mealRequestField?.conditional![0].field).toBe(
+        "dietaryRestrictions"
+      );
+      expect(mealRequestField?.conditional![0].operator).toBe("notEmpty");
+      expect(mealRequestField?.conditional![0].action).toBe("show");
+      expect(mealRequestField?.validation?.maxLength).toBe(500);
+    });
+
+    it("should have emergency contact fields", () => {
+      const emergencyNameField = eventRegistrationFormSchema.fields!.find(
+        (f) => f.id === "emergencyContact"
+      );
+      const emergencyPhoneField = eventRegistrationFormSchema.fields!.find(
+        (f) => f.id === "emergencyPhone"
+      );
+
+      expect(emergencyNameField?.validation?.required).toBe(true);
+      expect(emergencyNameField?.validation?.minLength).toBe(3);
+
+      expect(emergencyPhoneField?.validation?.required).toBe(true);
+      expect(emergencyPhoneField?.validation?.pattern).toBe(
+        "^\\+?1?-?\\(?\\d{3}\\)?-?\\d{3}-?\\d{4}$"
+      );
+    });
+
+    it("should have terms acceptance as required checkbox", () => {
+      const termsField = eventRegistrationFormSchema.fields!.find(
+        (f) => f.id === "termsAccepted"
+      );
+      expect(termsField?.type).toBe("checkbox");
+      expect(termsField?.validation?.required).toBe(true);
+      expect(termsField?.validation?.min).toBe(1);
+      expect(termsField?.options).toHaveLength(1);
+      expect(termsField?.options![0]).toEqual({
+        label: "I agree to the event terms and conditions",
+        value: "accepted",
+      });
+    });
+
+    it("should have proper number field constraints", () => {
+      const ageField = eventRegistrationFormSchema.fields!.find(
+        (f) => f.id === "age"
+      );
+      expect(ageField?.validation?.min).toBe(13);
+      expect(ageField?.validation?.max).toBe(100);
+
+      const ticketsField = eventRegistrationFormSchema.fields!.find(
+        (f) => f.id === "numberOfTickets"
+      );
+      expect(ticketsField?.validation?.min).toBe(1);
+      expect(ticketsField?.validation?.max).toBe(10);
+
+      const nightsField = eventRegistrationFormSchema.fields!.find(
+        (f) => f.id === "nights"
+      );
+      expect(nightsField?.validation?.min).toBe(1);
+      expect(nightsField?.validation?.max).toBe(7);
+    });
+
+    it("should have all computed fields marked as disabled", () => {
+      const computedFieldIds = [
+        "ticketPrice",
+        "ticketSubtotal",
+        "accommodationCost",
+        "totalCost",
+      ];
+      computedFieldIds.forEach((fieldId) => {
+        const field = eventRegistrationFormSchema.fields!.find(
+          (f) => f.id === fieldId
+        );
+        expect(field?.disabled).toBe(true);
+        expect(field?.computed).toBeDefined();
+      });
+    });
+
+    it("should have complex accommodation cost computation", () => {
+      const accommodationCostField = eventRegistrationFormSchema.fields!.find(
+        (f) => f.id === "accommodationCost"
+      );
+      expect(accommodationCostField?.computed?.dependencies).toEqual([
+        "accommodationNeeded",
+        "roomType",
+        "nights",
+      ]);
+      expect(accommodationCostField?.computed?.formula).toContain(
+        "accommodationNeeded !== 'yes'"
+      );
+      expect(accommodationCostField?.computed?.formula).toContain("roomPrices");
     });
   });
 
@@ -223,7 +431,9 @@ describe("Example Schemas", () => {
       expect(exampleSchemas.survey).toBe(surveyFormSchema);
       expect(exampleSchemas.jobApplication).toBe(jobApplicationSchema);
       expect(exampleSchemas.quiz).toBe(quizSchema);
-      expect(exampleSchemas.calculator).toBe(calculatorFormSchema);
+      expect(exampleSchemas.eventRegistration).toBe(
+        eventRegistrationFormSchema
+      );
     });
 
     it("should have all schemas as valid FormSchema types", () => {

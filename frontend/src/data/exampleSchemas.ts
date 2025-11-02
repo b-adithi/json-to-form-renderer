@@ -329,71 +329,6 @@ export const quizSchema: FormSchema = {
   ],
 };
 
-export const calculatorFormSchema: FormSchema = {
-  title: "Loan Calculator",
-  description: "Calculate your monthly loan payment",
-  submitButton: "Calculate",
-  fields: [
-    {
-      id: "loanAmount",
-      type: "number",
-      label: "Loan Amount ($)",
-      placeholder: "10000",
-      validation: {
-        required: true,
-        min: 1000,
-        max: 1000000,
-      },
-    },
-    {
-      id: "interestRate",
-      type: "number",
-      label: "Annual Interest Rate (%)",
-      placeholder: "5.5",
-      validation: {
-        required: true,
-        min: 0,
-        max: 100,
-      },
-      step: 0.1,
-    },
-    {
-      id: "loanTerm",
-      type: "number",
-      label: "Loan Term (years)",
-      placeholder: "5",
-      validation: {
-        required: true,
-        min: 1,
-        max: 30,
-      },
-    },
-    {
-      id: "monthlyPayment",
-      type: "number",
-      label: "Estimated Monthly Payment ($)",
-      disabled: true,
-      computed: {
-        formula:
-          "(loanAmount * (interestRate / 100 / 12) * Math.pow(1 + (interestRate / 100 / 12), loanTerm * 12)) / (Math.pow(1 + (interestRate / 100 / 12), loanTerm * 12) - 1)",
-        dependencies: ["loanAmount", "interestRate", "loanTerm"],
-        precision: 2,
-      },
-    },
-    {
-      id: "totalPayment",
-      type: "number",
-      label: "Total Payment Over Life of Loan ($)",
-      disabled: true,
-      computed: {
-        formula: "monthlyPayment * loanTerm * 12",
-        dependencies: ["monthlyPayment", "loanTerm"],
-        precision: 2,
-      },
-    },
-  ],
-};
-
 export const eventRegistrationFormSchema: FormSchema = {
   title: "Event Registration with Advanced Features",
   description:
@@ -667,7 +602,7 @@ export const eventRegistrationFormSchema: FormSchema = {
       disabled: true,
       computed: {
         formula:
-          "\n          (() => {\n            const prices = { general: 50, vip: 150, student: 25, senior: 30 };\n            return prices[ticketType] || 0;\n          })()\n        ",
+          "(function() { const prices = { general: 50, vip: 150, student: 25, senior: 30 }; return prices[ticketType] || 0; })()",
         dependencies: ["ticketType"],
         precision: 2,
       },
@@ -690,7 +625,7 @@ export const eventRegistrationFormSchema: FormSchema = {
       disabled: true,
       computed: {
         formula:
-          "\n          (() => {\n            if (accommodationNeeded !== 'yes') return 0;\n            const roomPrices = { single: 100, double: 150, suite: 250 };\n            const pricePerNight = roomPrices[roomType] || 0;\n            return pricePerNight * (nights || 0);\n          })()\n        ",
+          "(function() { if (accommodationNeeded !== 'yes') return 0; const roomPrices = { single: 100, double: 150, suite: 250 }; const pricePerNight = roomPrices[roomType] || 0; return pricePerNight * (nights || 0); })()",
         dependencies: ["accommodationNeeded", "roomType", "nights"],
         precision: 2,
       },
@@ -751,6 +686,5 @@ export const exampleSchemas = {
   survey: surveyFormSchema,
   jobApplication: jobApplicationSchema,
   quiz: quizSchema,
-  calculator: calculatorFormSchema,
   eventRegistration: eventRegistrationFormSchema,
 };
